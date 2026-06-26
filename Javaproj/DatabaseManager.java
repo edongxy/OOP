@@ -159,7 +159,7 @@ public class DatabaseManager implements DatabaseOperations {
 
     public String getBookPopularityMetrics() {
         String query = "SELECT b.Title, SUM(oi.Quantity) as TotalSold FROM Order_Item oi JOIN Book b ON oi.Book_ID = b.Book_ID GROUP BY oi.Book_ID ORDER BY TotalSold DESC";
-        StringBuilder out = new StringBuilder("--- METRIC CHARTS ---\n");
+        StringBuilder out = new StringBuilder("    METRIC CHARTS    \n");
         try (Connection conn = getConnection(); Statement s = conn.createStatement(); ResultSet rs = s.executeQuery(query)) {
             while (rs.next()) {
                 out.append(rs.getString("Title")).append(" -> Vol Sold: ").append(rs.getInt("TotalSold")).append("\n");

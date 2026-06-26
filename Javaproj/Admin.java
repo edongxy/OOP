@@ -10,19 +10,33 @@ public class Admin extends User {
     @Override
     public void displayPortalMenu(DatabaseManager db) {
         while (true) {
-            String menu = "--- ADMIN OPERATIONS CONTROL ---\n" +
-                           "1. [CRUD] Add New Book\n" +
-                           "2. [CRUD] Update Book Stock\n" +
-                           "3. [CRUD] Delete Book Record\n" +
-                           "4. View Book Popularity Ranks\n" +
-                           "5. View Sales Summary Reports\n" +
-                           "6. Sign Out";
+            String menu = "            ADMIN OPERATIONS CONTROL          \n" +
+                           "1. View Current Inventory Stock\n" +
+                           "2. Add New Book\n" +
+                           "3. Update Book Stock\n" +
+                           "4. Delete Book Record\n" +
+                           "5. Search Book Record by ID\n" +
+                           "6. View Book Popularity Ranks\n" + 
+                           "7. View Sales Summary Reports\n" + 
+                           "8. Sign Out"; 
             String input = JOptionPane.showInputDialog(null, menu, "Admin Control Dashboard", JOptionPane.PLAIN_MESSAGE);
-            if (input == null || input.equals("6")) break;
+            if (input == null || input.equals("8")) break;
 
             try {
                 switch (input) {
-                    case "1":
+                    case "1": // READ (Displays current books from the database
+                        ArrayList<Book> books = db.getAllBooks();
+                        if (books.isEmpty()) {
+                            JOptionPane.showMessageDialog(null, "The warehouse storage database is currently empty.");
+                        } else {
+                            StringBuilder sb = new StringBuilder("            CURRENT INVENTORY WAREHOUSE MANAGEMENT    \n");
+                            for (Book b : books) {
+                                sb.append(b.getDetails()).append("\n");
+                            }
+                            JOptionPane.showMessageDialog(null, sb.toString());
+                        }
+                        break;
+                    case "2": // CREATE
                         String title = JOptionPane.showInputDialog("Book Title:");
                         String author = JOptionPane.showInputDialog("Author:");
                         String genre = JOptionPane.showInputDialog("Genre:");
@@ -32,26 +46,41 @@ public class Admin extends User {
                             JOptionPane.showMessageDialog(null, "Book added successfully.");
                         }
                         break;
-                    case "2":
+                    case "3": // UPDATE
                         int updateId = Integer.parseInt(JOptionPane.showInputDialog("Enter Book ID to Update:"));
                         int newStock = Integer.parseInt(JOptionPane.showInputDialog("Enter New Stock Quantity:"));
                         if (db.updateBookStock(updateId, newStock)) {
                             JOptionPane.showMessageDialog(null, "Inventory stock level refreshed.");
                         }
                         break;
-                    case "3":
+                    case "4": // DELETE
                         int deleteId = Integer.parseInt(JOptionPane.showInputDialog("Enter Book ID to Erase:"));
                         if (db.deleteBook(deleteId)) {
                             JOptionPane.showMessageDialog(null, "Book record removed from system.");
                         }
                         break;
-                    case "4":
+                    case "5": // SEARCH RECORD
+                        int searchId = Integer.parseInt(JOptionPane.showInputDialog("Enter Book ID to search:"));
+                        boolean found = false;
+                        for (Book b : db.getAllBooks()) {
+                            if (b.getBookId() == searchId) {
+                                JOptionPane.showMessageDialog(null, "Record Found:\n" + b.getDetails());
+                                found = true;
+                                break;
+                            }
+                        }
+                        if (!found) {
+                            JOptionPane.showMessageDialog(null, "Record not found in the database.", "Search Result", JOptionPane.WARNING_MESSAGE);
+                        }
+                        break;
+                    case "6":
                         JOptionPane.showMessageDialog(null, db.getBookPopularityMetrics());
                         break;
-                    case "5":
+                    case "7":
                         String repType = JOptionPane.showInputDialog("1=Daily, 2=Weekly, 3=Monthly:");
                         JOptionPane.showMessageDialog(null, db.generateSalesReport(Integer.parseInt(repType)));
                         break;
+                    
                 }
             } catch (Exception e) {
                 JOptionPane.showMessageDialog(null, "Operation Failed: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);

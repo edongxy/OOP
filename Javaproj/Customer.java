@@ -10,7 +10,7 @@ public class Customer extends User {
     @Override
     public void displayPortalMenu(DatabaseManager db) {
         while (true) {
-            String menu = "--- CUSTOMER PORTAL ---\n1. Browse Books Catalog\n2. Add Book to Cart\n3. View My Cart\n4. Process Order Checkout\n5. Sign Out";
+            String menu = "    CUSTOMER PORTAL    \n1. View Available Books\n2. Add a Book to Cart\n3. View My Cart\n4. Process Order Checkout\n5. Sign Out";
             String input = JOptionPane.showInputDialog(null, menu, "Welcome, " + getUsername(), JOptionPane.PLAIN_MESSAGE);
 
             if (input == null || input.equals("5")) break;
@@ -19,7 +19,7 @@ public class Customer extends User {
                 switch (Integer.parseInt(input)) {
                     case 1:
                         ArrayList<Book> books = db.getAllBooks();
-                        StringBuilder sb = new StringBuilder("--- AVAILABLE INVENTORY ---\n");
+                        StringBuilder sb = new StringBuilder("    AVAILABLE BOOKS    \n");
                         for (Book b : books) sb.append(b.getDetails()).append("\n");
                         JOptionPane.showMessageDialog(null, sb.toString());
                         break;
@@ -32,7 +32,7 @@ public class Customer extends User {
                         break;
                     case 3:
                         ArrayList<CartItem> cart = db.getCart(getUserId());
-                        StringBuilder cb = new StringBuilder("--- CURRENT SHOPPING CART ---\n");
+                        StringBuilder cb = new StringBuilder("    CURRENT SHOPPING CART    \n");
                         for (CartItem ci : cart) {
                             cb.append(ci.getBook().getTitle()).append(" (Qty: ").append(ci.getQuantity()).append(")\n");
                         }
