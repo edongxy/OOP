@@ -10,10 +10,10 @@ public class Customer extends User {
     @Override
     public void displayPortalMenu(DatabaseManager db) {
         while (true) {
-            String menu = "    CUSTOMER PORTAL    \n1. View Available Books\n2. Add a Book to Cart\n3. View My Cart\n4. Process Order Checkout\n5. Sign Out";
+            String menu = "    CUSTOMER PORTAL    \n1. View Available Books\n2. Search a Book by Title\n3. Add a Book to Cart\n4. View My Cart\n5. Process Order Checkout\n6. Sign Out";
             String input = JOptionPane.showInputDialog(null, menu, "Welcome, " + getUsername(), JOptionPane.PLAIN_MESSAGE);
 
-            if (input == null || input.equals("5")) break;
+            if (input == null || input.equals("6")) break;
 
             try {
                 switch (Integer.parseInt(input)) {
@@ -24,13 +24,35 @@ public class Customer extends User {
                         JOptionPane.showMessageDialog(null, sb.toString());
                         break;
                     case 2:
+                        String searchTitle = JOptionPane.showInputDialog("Enter book title to search:");
+                        if (searchTitle != null && !searchTitle.trim().isEmpty()) {
+                            ArrayList<Book> allBooks = db.getAllBooks();
+                            StringBuilder results = new StringBuilder("--- SEARCH RESULTS ---\n");
+                            boolean found = false;
+        
+                            for (Book b : allBooks) {
+                                // Checks if the book title contains the search string (case-insensitive)
+                                if (b.getTitle().toLowerCase().contains(searchTitle.toLowerCase())) {
+                                    results.append(b.getDetails()).append("\n");
+                                    found = true;
+                                }
+                            }
+        
+                            if (found) {
+                                JOptionPane.showMessageDialog(null, results.toString());
+                            } else {
+                                JOptionPane.showMessageDialog(null, "No books found matching that title.");
+                            }
+                        }
+                        break;
+                    case 3:
                         int bookId = Integer.parseInt(JOptionPane.showInputDialog("Enter Book ID:"));
                         int quantity = Integer.parseInt(JOptionPane.showInputDialog("Enter Quantity:"));
                         if (db.addToCart(getUserId(), bookId, quantity)) {
                             JOptionPane.showMessageDialog(null, "Item added to cart.");
                         }
                         break;
-                    case 3:
+                    case 4:
                         ArrayList<CartItem> cart = db.getCart(getUserId());
                         StringBuilder cb = new StringBuilder("    CURRENT SHOPPING CART    \n");
                         for (CartItem ci : cart) {
@@ -38,7 +60,7 @@ public class Customer extends User {
                         }
                         JOptionPane.showMessageDialog(null, cb.toString());
                         break;
-                    case 4:
+                    case 5:
                         int confirm = JOptionPane.showConfirmDialog(null, "Confirm checkout? This updates store inventory.", "Order Confirmation", JOptionPane.YES_NO_OPTION);
                         if (confirm == JOptionPane.YES_OPTION) {
                             db.checkout(getUserId());
