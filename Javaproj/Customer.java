@@ -29,15 +29,12 @@ public class Customer extends User {
                             ArrayList<Book> allBooks = db.getAllBooks();
                             StringBuilder results = new StringBuilder("--- SEARCH RESULTS ---\n");
                             boolean found = false;
-        
                             for (Book b : allBooks) {
-                                // Checks if the book title contains the search string (case-insensitive)
                                 if (b.getTitle().toLowerCase().contains(searchTitle.toLowerCase())) {
                                     results.append(b.getDetails()).append("\n");
                                     found = true;
                                 }
                             }
-        
                             if (found) {
                                 JOptionPane.showMessageDialog(null, results.toString());
                             } else {
@@ -46,25 +43,84 @@ public class Customer extends User {
                         }
                         break;
                     case 3:
-                        int bookId = Integer.parseInt(JOptionPane.showInputDialog("Enter Book ID:"));
-                        int quantity = Integer.parseInt(JOptionPane.showInputDialog("Enter Quantity:"));
-                        if (db.addToCart(getUserId(), bookId, quantity)) {
-                            JOptionPane.showMessageDialog(null, "Item added to cart.");
+                        int bookId = Integer.parseInt(JOptionPane.showInputDialog("Enter Book ID to add to cart:"));
+                        int qty = Integer.parseInt(JOptionPane.showInputDialog("Enter Quantity:"));
+                        if (db.addToCart(getUserId(), bookId, qty)) {
+                            JOptionPane.showMessageDialog(null, "Added to cart successfully.");
                         }
                         break;
                     case 4:
-                        ArrayList<CartItem> cart = db.getCart(getUserId());
-                        StringBuilder cb = new StringBuilder("    CURRENT SHOPPING CART    \n");
-                        for (CartItem ci : cart) {
-                            cb.append(ci.getBook().getTitle()).append(" (Qty: ").append(ci.getQuantity()).append(")\n");
+                        ArrayList<CartItem> viewCart = db.getCart(getUserId());
+                        StringBuilder cb = new StringBuilder("    YOUR SHOPPING CART    \n");
+                        for (CartItem ci : viewCart) {
+                            cb.append(ci.getBook().getTitle()).append(" x").append(ci.getQuantity()).append("\n");
                         }
                         JOptionPane.showMessageDialog(null, cb.toString());
                         break;
-                    case 5:
-                        int confirm = JOptionPane.showConfirmDialog(null, "Confirm checkout? This updates store inventory.", "Order Confirmation", JOptionPane.YES_NO_OPTION);
+                    case 5: 
+                        int confirm = JOptionPane.showConfirmDialog(null, "Confirm checkout? This will finalize your order.", "Order Confirmation", JOptionPane.YES_NO_OPTION);
+                        
                         if (confirm == JOptionPane.YES_OPTION) {
-                            db.checkout(getUserId());
-                            JOptionPane.showMessageDialog(null, "Order processed successfully!");
+                            ArrayList<CartItem> checkoutCart = db.getCart(getUserId());
+                            if (checkoutCart.isEmpty()) {
+                                JOptionPane.showMessageDialog(null, "Your cart is empty.");
+                                break;
+                            }
+
+                            // Calculate Grand Total from Cart items
+                            double grandTotal = 0;
+                            for (CartItem ci : checkoutCart) {
+                                grandTotal += (ci.getBook().getPrice() * ci.getQuantity());
+                            }
+
+                            // Payment Amount input
+                            String paymentInput = JOptionPane.showInputDialog(null, "Total Due: ₱" + String.format("%.2f", grandTotal) + "\nEnter Cash Amount Paid:");
+                            if (paymentInput == null || paymentInput.trim().isEmpty()) break; 
+                            
+                            try {
+                                double amountPaid = Double.parseDouble(paymentInput);
+                                
+                                // Validate payment sufficiency
+                                if (amountPaid < grandTotal) {
+                                    JOptionPane.showMessageDialog(null, "Insufficient payment! Transaction cancelled.", "Payment Error", JOptionPane.ERROR_MESSAGE);
+                                    break;
+                                }
+                                
+                                double change = amountPaid - grandTotal;
+
+                                db.checkout(getUserId());
+                                
+                                StringBuilder receipt = new StringBuilder();
+                                receipt.append("==============================\n");
+                                receipt.append("       OFFICIAL RECEIPT       \n");
+                                receipt.append("==============================\n");
+                                receipt.append(String.format("%-15s %-5s %-10s\n", "Item", "Qty", "Price"));
+                                receipt.append("------------------------------\n");
+                                
+                                for (CartItem ci : checkoutCart) {
+                                    double subtotal = ci.getBook().getPrice() * ci.getQuantity();
+                                    receipt.append(String.format("%-15s %-5d ₱%-9.2f\n", 
+                                                   ci.getBook().getTitle(), 
+                                                   ci.getQuantity(), 
+                                                   subtotal));
+                                }
+                                
+                                receipt.append("------------------------------\n");
+                                receipt.append(String.format("TOTAL DUE:          ₱%.2f\n", grandTotal));
+                                receipt.append(String.format("CASH TENDERED:      ₱%.2f\n", amountPaid));
+                                receipt.append(String.format("CHANGE:             ₱%.2f\n", change));
+                                receipt.append("==============================\n");
+                                receipt.append("   Thank you for shopping!    \n");
+                                
+                                // Wrap in JTextArea with Monospaced font so columns match up flawlessly
+                                javax.swing.JTextArea textArea = new javax.swing.JTextArea(receipt.toString());
+                                textArea.setFont(new java.awt.Font("Monospaced", java.awt.Font.PLAIN, 12));
+                                textArea.setEditable(false);
+                                JOptionPane.showMessageDialog(null, new javax.swing.JScrollPane(textArea), "Transaction Receipt", JOptionPane.INFORMATION_MESSAGE);
+                                
+                            } catch (NumberFormatException nfe) {
+                                JOptionPane.showMessageDialog(null, "Invalid monetary numerical values entered.", "Input Error", JOptionPane.ERROR_MESSAGE);
+                            }
                         }
                         break;
                 }
