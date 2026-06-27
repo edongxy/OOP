@@ -4,7 +4,7 @@ import java.util.ArrayList;
 public class DatabaseManager implements DatabaseOperations {
     private final String URL = "jdbc:mysql://localhost:3306/bookstore_db";
     private final String USER = "root";
-    private final String PASS = "JC_jamaco102"; // local instance password kung nasaan yung database
+    private final String PASS = "password123"; // local instance password kung nasaan yung database. Change to your database password
 
     private Connection getConnection() throws SQLException {
         try {
