@@ -4,7 +4,7 @@ import java.util.ArrayList;
 public class DatabaseManager implements DatabaseOperations {
     private final String URL = "jdbc:mysql://localhost:3306/bookstore_db";
     private final String USER = "root";
-    private final String PASS = "JC_jamaco102"; // local instance password kung nasaan yung database
+    private final String PASS = "Jess43006"; // local instance password kung nasaan yung database
 
     private Connection getConnection() throws SQLException {
         try {
@@ -116,6 +116,23 @@ public class DatabaseManager implements DatabaseOperations {
             }
         } catch (SQLException e) { e.printStackTrace(); }
         return cart;
+    }
+
+    public boolean removeFromCart(int userId, int bookId) {
+        String query = "DELETE FROM Cart_Item WHERE User_ID = ? AND Book_ID = ?";
+
+        try (Connection conn = getConnection();
+            PreparedStatement pstmt = conn.prepareStatement(query)) {
+
+            pstmt.setInt(1, userId);
+            pstmt.setInt(2, bookId);
+
+            return pstmt.executeUpdate() > 0;
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
     }
 
     public boolean checkout(int userId) throws Exception {

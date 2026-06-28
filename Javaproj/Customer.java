@@ -1,5 +1,5 @@
-import javax.swing.JOptionPane;
 import java.util.ArrayList;
+import javax.swing.JOptionPane;
 
 public class Customer extends User {
     
@@ -10,10 +10,10 @@ public class Customer extends User {
     @Override
     public void displayPortalMenu(DatabaseManager db) {
         while (true) {
-            String menu = "    CUSTOMER PORTAL    \n1. View Available Books\n2. Search a Book by Title\n3. Add a Book to Cart\n4. View My Cart\n5. Process Order Checkout\n6. Sign Out";
+            String menu = "    CUSTOMER PORTAL    \n1. View Available Books\n2. Search a Book by Title\n3. Add a Book to Cart\n4. View My Cart\n5. Remove Book from Cart\n6. Process Order Checkout\n7. Sign Out";
             String input = JOptionPane.showInputDialog(null, menu, "Welcome, " + getUsername(), JOptionPane.PLAIN_MESSAGE);
 
-            if (input == null || input.equals("6")) break;
+            if (input == null || input.equals("7")) break;
 
             try {
                 switch (Integer.parseInt(input)) {
@@ -57,7 +57,42 @@ public class Customer extends User {
                         }
                         JOptionPane.showMessageDialog(null, cb.toString());
                         break;
-                    case 5: 
+                    
+                    case 5:
+                        ArrayList<CartItem> removeCart = db.getCart(getUserId());
+
+                        if (removeCart.isEmpty()) {
+                            JOptionPane.showMessageDialog(null, "Your cart is empty.");
+                            break;
+                        }
+
+                        StringBuilder cartList = new StringBuilder("    YOUR SHOPPING CART    \n");
+                        for (CartItem ci : removeCart) {
+                            cartList.append("Book ID: ")
+                                    .append(ci.getBook().getBookId())
+                                    .append(" | ")
+                                    .append(ci.getBook().getTitle())
+                                    .append(" x")
+                                    .append(ci.getQuantity())
+                                    .append("\n");
+                        }
+
+                        String removeInput = JOptionPane.showInputDialog(
+                                null,
+                                cartList.toString() + "\nEnter Book ID to remove from cart:"
+                        );
+
+                        if (removeInput == null || removeInput.trim().isEmpty()) break;
+
+                        int removeBookId = Integer.parseInt(removeInput);
+
+                        if (db.removeFromCart(getUserId(), removeBookId)) {
+                            JOptionPane.showMessageDialog(null, "Book removed from cart successfully.");
+                        } else {
+                            JOptionPane.showMessageDialog(null, "Book was not found in your cart.");
+                        }
+                        break;
+                    case 6: 
                         int confirm = JOptionPane.showConfirmDialog(null, "Confirm checkout? This will finalize your order.", "Order Confirmation", JOptionPane.YES_NO_OPTION);
                         
                         if (confirm == JOptionPane.YES_OPTION) {
